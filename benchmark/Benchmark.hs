@@ -11,7 +11,7 @@ import Control.Monad
 
 
 benchmarks =
-    ["fsatrace" * Benchmark.FSATrace.main
+    [ "fsatrace" * Benchmark.FSATrace.main
     ,"redis" * Benchmark.Redis.main
     ,"micro" * Benchmark.Micro.main
     ,"intro" * Benchmark.Intro.main

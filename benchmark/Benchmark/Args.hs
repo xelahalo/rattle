@@ -15,6 +15,7 @@ data Args = Args
     ,commits :: Maybe Int
     ,no_stderr :: Bool
     ,count :: Maybe Int
+    ,script_dir :: FilePath
     }
     deriving Data
 
@@ -27,6 +28,7 @@ mode = cmdArgsMode $ Args
     ,commits = Nothing
     ,no_stderr = False
     ,count = Nothing
+    ,script_dir = def &= typDir &= help "The directory for the container scripts"
     }
 
 getArguments :: IO Args

@@ -16,6 +16,8 @@ import Data.IORef
 import Data.Maybe
 import System.IO.Extra
 import Control.Monad.Extra
+import Benchmark.Util
+import Control.Concurrent
 
 
 data VsMake = VsMake
@@ -52,6 +54,7 @@ timed ref msg j commit act = do
 
 vsMake :: VsMake -> Args -> IO ()
 vsMake vs@VsMake{..} Args{..} = withTempDir $ \dir -> do
+    putStrLn $ "WORKING IN " ++ dir
     let counted = maybe id take count
     let commitList = reverse [0..fromMaybe 10 commits]
 
@@ -62,10 +65,14 @@ vsMake vs@VsMake{..} Args{..} = withTempDir $ \dir -> do
                     act commit
     let stderr = [EchoStderr False | no_stderr]
 
+    initTracer script_dir dir
+
     withCurrentDirectory dir $ do
         -- don't pass a depth argument, or git changes the length of the shown commit hashes
         -- which messes up caching and broken hashes
-        cmd_ "git clone" repo "."
+        executeWithShell "mkdir temp"
+        cmd_ "git clone" repo "temp"
+        executeWithShell "shopt -s dotglob && mv temp/* . && rm -rf temp"
 
         -- generate all the Rattle files
         when ("generate" `elemOrNull` step) $ do
@@ -112,3 +119,4 @@ vsMake vs@VsMake{..} Args{..} = withTempDir $ \dir -> do
                 rattle <- readIORef rattleTime
                 putStrLn $ "TOTALS: make = " ++ showDuration make ++ ", rattle = " ++ showDuration rattle
     copyFile (dir </> "vsmake.log") "vsmake.log"
+    stopTracer script_dir
